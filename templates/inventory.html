@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - PC Parts Inventory</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="flex min-h-screen bg-gray-100 text-gray-900">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-white p-4 transform transition-transform duration-300 lg:translate-x-0 -translate-x-full z-50">
+    <div class="mb-6 text-center border-b border-white/20 pb-4">
+      <h4 class="text-2xl font-bold">Admin Panel</h4>
+      <small class="text-white/60">Borrowing Management</small>
+    </div>
+    <nav class="flex flex-col space-y-2">
+      <a href="{{ url_for('admin') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+        <i data-lucide="list" class="w-5 h-5 mr-2"></i> All Requests
+      </a>
+      <a href="{{ url_for('manage_item') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+        <i data-lucide="package" class="w-5 h-5 mr-2"></i> Manage Items
+      </a>
+      <a href="{{ url_for('manage_user') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+        <i data-lucide="users" class="w-5 h-5 mr-2"></i> Manage Users
+      </a>
+      <a href="{{ url_for('inventory') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition bg-white/10">
+        <i data-lucide="cpu" class="w-5 h-5 mr-2"></i> PC Parts Inventory
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Overlay for mobile -->
+  <div id="sidebarOverlay" class="hidden fixed inset-0 bg-black/50 z-40"></div>
+
+  <!-- Main Content -->
+  <main class="flex-1 ml-0 lg:ml-64 p-6 space-y-6 transition-all duration-300">
+    <!-- Top Navbar -->
+    <div class="flex items-center justify-between bg-white rounded-xl shadow p-4">
+      <button id="sidebarToggle" class="lg:hidden">
+        <i data-lucide="menu" class="w-6 h-6"></i>
+      </button>
+      <h2 class="text-xl font-bold">PC Parts Inventory</h2>
+      <form action="{{ url_for('login_bp.logout') }}" method="post">
+        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+          <i data-lucide="log-out" class="w-5 h-5"></i> Logout
+        </button>
+      </form>
+    </div>
+
+    <!-- Add PC Part Form -->
+    <div class="bg-white rounded-xl shadow p-4">
+      <h3 class="text-lg font-semibold flex items-center gap-2 mb-4">
+        <i data-lucide="plus-square" class="w-5 h-5"></i> Add New PC Part
+      </h3>
+      <form method="post" action="{{ url_for('add_pc_part') }}" class="grid grid-cols-1 sm:grid-cols-7 gap-4">
+        <input type="text" name="part_name" placeholder="Part Name" class="border border-gray-300 rounded px-3 py-2 w-full">
+        <input type="text" name="brand_model" placeholder="Brand / Model" class="border border-gray-300 rounded px-3 py-2 w-full">
+        <input type="text" name="serial_number" placeholder="Serial Number" class="border border-gray-300 rounded px-3 py-2 w-full">
+        <input type="number" name="quantity" placeholder="Quantity" class="border border-gray-300 rounded px-3 py-2 w-full">
+        <input type="number" step="0.01" name="acquisition_cost" placeholder="Acquisition Cost" class="border border-gray-300 rounded px-3 py-2 w-full">
+        <input type="date" name="date_acquired" placeholder="Date Acquired" class="border border-gray-300 rounded px-3 py-2 w-full">
+        <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">Add Part</button>
+      </form>
+    </div>
+
+    <!-- PC Parts Table -->
+    <div class="bg-white rounded-xl shadow p-4">
+      <h3 class="text-lg font-semibold flex items-center gap-2 mb-4">
+        <i data-lucide="cpu" class="w-5 h-5"></i> PC Parts List
+      </h3>
+      {% if pc_parts|length == 0 %}
+        <div class="bg-gray-100 text-gray-600 p-3 rounded-lg text-center">
+          No PC parts found.
+        </div>
+      {% else %}
+        <div class="overflow-x-auto">
+          <table class="min-w-full border border-gray-200 text-sm">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="px-4 py-2 text-left border-b">Part Name</th>
+                <th class="px-4 py-2 text-left border-b">Brand / Model</th>
+                <th class="px-4 py-2 text-left border-b">Serial Number</th>
+                <th class="px-4 py-2 text-left border-b">Quantity</th>
+                <th class="px-4 py-2 text-left border-b">Acquisition Cost</th>
+                <th class="px-4 py-2 text-left border-b">Current Value</th>
+                <th class="px-4 py-2 text-left border-b">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for part in pc_parts %}
+              {% set years = ((now() - part.date_acquired).days // 365) %}
+              {% set current_value = part.acquisition_cost * (0.98 ** years) %}
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2 border-b">{{ part.part_name }}</td>
+                <td class="px-4 py-2 border-b">{{ part.brand_model }}</td>
+                <td class="px-4 py-2 border-b">{{ part.serial_number }}</td>
+                <td class="px-4 py-2 border-b">{{ part.quantity }}</td>
+                <td class="px-4 py-2 border-b">${{ part.acquisition_cost | round(2) }}</td>
+                <td class="px-4 py-2 border-b">${{ current_value | round(2) }}</td>
+                <td class="px-4 py-2 border-b space-x-2">
+                  <form action="{{ url_for('edit_pc_part', id=part.id) }}" method="get" class="inline">
+                    <button class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded text-xs">Edit</button>
+                  </form>
+                  <form action="{{ url_for('delete_pc_part', id=part.id) }}" method="post" class="inline">
+                    <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">Delete</button>
+                  </form>
+                  <!--<button onclick="showQRCode({{ part | tojson }})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">
+                    QR Code
+                  </button> -->
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endif %}
+    </div>
+  </main>
+
+  <!-- QR Code Modal -->
+  <div id="qrModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 w-80 relative">
+      <button onclick="closeQRCode()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+      <h3 class="text-lg font-bold mb-4">PC Part Info</h3>
+      <div id="qrcode" class="mb-4 flex justify-center"></div>
+      <ul id="partDetails" class="text-sm space-y-1"></ul>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const toggle = document.getElementById('sidebarToggle');
+
+    toggle.addEventListener('click', () => {
+      sidebar.classList.toggle('-translate-x-full');
+      overlay.classList.toggle('hidden');
+    });
+
+    overlay.addEventListener('click', () => {
+      sidebar.classList.add('-translate-x-full');
+      overlay.classList.add('hidden');
+    });
+
+    // QR Code Modal Functions
+    function showQRCode(part) {
+      const qrModal = document.getElementById('qrModal');
+      const qrDiv = document.getElementById('qrcode');
+      const details = document.getElementById('partDetails');
+
+      qrDiv.innerHTML = '';
+      details.innerHTML = '';
+
+      const years = Math.floor((new Date() - new Date(part.date_acquired)) / (1000*60*60*24*365));
+      const current_value = (part.acquisition_cost * Math.pow(0.98, years)).toFixed(2);
+
+      const qrData = `
+Department: ${part.department || 'N/A'}
+Location: ${part.location || 'N/A'}
+Quantity: ${part.quantity}
+Acquisition Cost: ${part.acquisition_cost}
+Current Value: ${current_value}
+Date Acquired: ${part.date_acquired}
+Status: ${part.status || 'N/A'}
+Accountable: ${part.accountable || 'N/A'}
+Serial No: ${part.serial_number}
+Brand/Model: ${part.brand_model}
+Description: ${part.description || 'N/A'}
+      `;
+
+      new QRCode(qrDiv, {
+        text: qrData,
+        width: 180,
+        height: 180
+      });
+
+      for (const [key, value] of Object.entries({...part, current_value: current_value})) {
+        details.innerHTML += `<li><strong>${key.replace(/_/g,' ')}:</strong> ${value}</li>`;
+      }
+
+      qrModal.classList.remove('hidden');
+      qrModal.classList.add('flex');
+    }
+
+    function closeQRCode() {
+      const qrModal = document.getElementById('qrModal');
+      qrModal.classList.add('hidden');
+      qrModal.classList.remove('flex');
+    }
+  </script>
+
+</body>
+</html>

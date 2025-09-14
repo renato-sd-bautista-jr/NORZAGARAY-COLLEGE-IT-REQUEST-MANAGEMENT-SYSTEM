@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Borrowing System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="flex min-h-screen bg-gray-100 text-gray-900">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-white p-4 transform transition-transform duration-300 lg:translate-x-0 -translate-x-full z-50">
+    <div class="mb-6 text-center border-b border-white/20 pb-4">
+      <h4 class="text-2xl font-bold">Admin Panel</h4>
+      <h1>Welcome, {{ username }}</h1>
+      <small class="text-white/60">Borrowing Management</small>
+    </div>
+    <nav class="flex flex-col space-y-2">
+      <a href="{{ url_for('admin') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition bg-white/10">
+        <i data-lucide="list" class="w-5 h-5 mr-2"></i> All Requests
+      </a>
+      <a href="{{ url_for('manage_item') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+        <i data-lucide="package" class="w-5 h-5 mr-2"></i> Manage Items
+      </a>
+      <a href="{{ url_for('manage_user') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+        <i data-lucide="users" class="w-5 h-5 mr-2"></i> Manage Users
+      </a>
+      <a href="{{ url_for('inventory') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+        <i data-lucide="cpu" class="w-5 h-5 mr-2"></i> PC Parts Inventory
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Overlay for mobile -->
+  <div id="sidebarOverlay" class="hidden fixed inset-0 bg-black/50 z-40"></div>
+
+  <!-- Main Content -->
+  <main class="flex-1 ml-0 lg:ml-64 p-6 space-y-6 transition-all duration-300">
+    <!-- Top Navbar -->
+    <div class="flex items-center justify-between bg-white rounded-xl shadow p-4">
+      <button id="sidebarToggle" class="lg:hidden">
+        <i data-lucide="menu" class="w-6 h-6"></i>
+      </button>
+      <h2 class="text-xl font-bold">Admin Dashboard</h2>
+      <form action="{{ url_for('login_bp.logout') }}" method="post">
+        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+          <i data-lucide="log-out" class="w-5 h-5"></i> Logout
+        </button>
+      </form>
+    </div>
+
+    <!-- All Requests Table -->
+    <div class="bg-white rounded-xl shadow p-4">
+      <h3 class="text-lg font-semibold flex items-center gap-2 mb-4">
+        <i data-lucide="list" class="w-5 h-5"></i> Borrow Requests
+      </h3>
+      {% if requests|length == 0 %}
+        <div class="bg-gray-100 text-gray-600 p-3 rounded-lg text-center">
+          No requests found.
+        </div>
+      {% else %}
+        <div class="overflow-x-auto">
+          <table class="min-w-full border border-gray-200 text-sm">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="px-4 py-2 text-left border-b">Student</th>
+                <th class="px-4 py-2 text-left border-b">Item</th>
+                <th class="px-4 py-2 text-left border-b">Borrow Date</th>
+                <th class="px-4 py-2 text-left border-b">Return Date</th>
+                <th class="px-4 py-2 text-left border-b">Status</th>
+                <th class="px-4 py-2 text-left border-b">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for req in requests %}
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2 border-b">{{ req.student_name }}</td>
+                <td class="px-4 py-2 border-b">{{ req.item_name }}</td>
+                <td class="px-4 py-2 border-b">{{ req.borrow_date }}</td>
+                <td class="px-4 py-2 border-b">{{ req.return_date }}</td>
+                <td class="px-4 py-2 border-b">
+                  <span class="px-2 py-1 text-xs font-semibold rounded 
+                    {% if req.status == 'Pending' %} bg-yellow-100 text-yellow-700
+                    {% elif req.status == 'Approved' %} bg-green-100 text-green-700
+                    {% elif req.status == 'Returned' %} bg-blue-100 text-blue-700
+                    {% else %} bg-red-100 text-red-700 {% endif %}">
+                    {{ req.status }}
+                  </span>
+                </td>
+                <td class="px-4 py-2 border-b space-x-2">
+                  {% if req.status == 'Pending' %}
+                    <form action="{{ url_for('approve_request', id=req.id) }}" method="post" class="inline">
+                      <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs">Approve</button>
+                    </form>
+                    <form action="{{ url_for('decline_request', id=req.id) }}" method="post" class="inline">
+                      <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">Decline</button>
+                    </form>
+                  {% elif req.status == 'Approved' %}
+                    <form action="{{ url_for('mark_returned', id=req.id) }}" method="post" class="inline">
+                      <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">Mark Returned</button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endif %}
+    </div>
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const toggle = document.getElementById('sidebarToggle');
+
+    toggle.addEventListener('click', () => {
+      sidebar.classList.toggle('-translate-x-full');
+      overlay.classList.toggle('hidden');
+    });
+
+    overlay.addEventListener('click', () => {
+      sidebar.classList.add('-translate-x-full');
+      overlay.classList.add('hidden');
+    });
+  </script>
+</body>
+</html>
