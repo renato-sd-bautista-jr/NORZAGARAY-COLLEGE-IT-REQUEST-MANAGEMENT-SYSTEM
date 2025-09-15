@@ -55,7 +55,7 @@
       <h3 class="text-lg font-semibold flex items-center gap-2 mb-4">
         <i data-lucide="plus-square" class="w-5 h-5"></i> Add New PC Part
       </h3>
-      <form method="post" action="{{ url_for('add_pc_part') }}" class="grid grid-cols-1 sm:grid-cols-7 gap-4">
+      <form method="post" action="" class="grid grid-cols-1 sm:grid-cols-7 gap-4">
         <input type="text" name="part_name" placeholder="Part Name" class="border border-gray-300 rounded px-3 py-2 w-full">
         <input type="text" name="brand_model" placeholder="Brand / Model" class="border border-gray-300 rounded px-3 py-2 w-full">
         <input type="text" name="serial_number" placeholder="Serial Number" class="border border-gray-300 rounded px-3 py-2 w-full">
@@ -101,10 +101,10 @@
                 <td class="px-4 py-2 border-b">${{ part.acquisition_cost | round(2) }}</td>
                 <td class="px-4 py-2 border-b">${{ current_value | round(2) }}</td>
                 <td class="px-4 py-2 border-b space-x-2">
-                  <form action="{{ url_for('edit_pc_part', id=part.id) }}" method="get" class="inline">
+                  <form action="" method="get" class="inline">
                     <button class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded text-xs">Edit</button>
                   </form>
-                  <form action="{{ url_for('delete_pc_part', id=part.id) }}" method="post" class="inline">
+                  <form action="" method="post" class="inline">
                     <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">Delete</button>
                   </form>
                   <!--<button onclick="showQRCode({{ part | tojson }})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">

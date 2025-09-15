@@ -1,10 +1,12 @@
 # manage_item.py
+import pymysql
+
 from db import get_db_connection
 
 def get_devices_with_details():
     conn = get_db_connection()
     try:
-        with conn.cursor(dictionary=True) as cursor:  # for mysql.connector
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:  # for mysql.connector
             cursor.execute("""
                 SELECT 
                     d.device_id,

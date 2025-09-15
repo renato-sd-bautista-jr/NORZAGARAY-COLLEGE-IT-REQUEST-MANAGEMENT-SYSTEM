@@ -1,5 +1,6 @@
 from flask import render_template, request, redirect, url_for, session,Flask
 from manage_item import get_devices_with_details, add_device
+from manage_user import get_user, edit_user, delete_user
 from login import login_bp
 
 app = Flask(__name__)
@@ -31,11 +32,16 @@ def concernlist():
 
 @app.route('/manage-user')
 def manage_user():
-    return render_template('manage_user.html')
+    if 'user_id' not in session:
+        return redirect(url_for('login_bp.login'))
+
+    all_users = get_user()
+    return render_template('manage_user.html', users=all_users)
 
 @app.route('/inventory')
 def inventory():
     return render_template('inventory.html')
+
 
 @app.route('/manage-item', methods=['GET', 'POST'])
 def manage_item():
@@ -52,6 +58,17 @@ def manage_item():
 
     items = get_devices_with_details()
     return render_template('manage_item.html', items=items)
+
+
+@app.route('/edit-item/<int:id>', methods=['GET', 'POST'])
+def edit_item(id):
+    # logic to edit the item goes here
+    return f"Edit item {id}"  # placeholder for now
+
+@app.route('/delete-item/<int:id>', methods=['POST'])
+def delete_item(id):
+    # logic to delete the item goes here
+    return redirect(url_for('manage_item'))
 
 if __name__ == "__main__":
     app.run(debug=True)
