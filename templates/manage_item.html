@@ -16,16 +16,16 @@
       <small class="text-white/60">Borrowing Management</small>
     </div>
     <nav class="flex flex-col space-y-2">
-      <a href="" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+       <a href="{{ url_for('admin') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
         <i data-lucide="list" class="w-5 h-5 mr-2"></i> All Requests
       </a>
-      <a href="" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition bg-white/10">
+      <a href="{{ url_for('manage_item') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition  bg-white/10">
         <i data-lucide="package" class="w-5 h-5 mr-2"></i> Manage Items
       </a>
-      <a href="" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+      <a href="{{ url_for('manage_user') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
         <i data-lucide="users" class="w-5 h-5 mr-2"></i> Manage Users
       </a>
-      <a href="" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+      <a href="{{ url_for('inventory') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
         <i data-lucide="cpu" class="w-5 h-5 mr-2"></i> PC Parts Inventory
       </a>
     </nav>

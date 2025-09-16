@@ -6,5 +6,5 @@ def get_db_connection():
         user='root',
         password='',
         database='ncitad',
-        cursorclass=pymysql.cursors.DictCursor  # always returns dict rows
+       cursorclass=pymysql.cursors.DictCursor  # always returns dict rows
     )
